@@ -1,0 +1,1 @@
+﻿Flank Preview adds a yellow marker to the Line Of Sight indicator for predicting moves.
