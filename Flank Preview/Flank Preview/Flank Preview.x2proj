@@ -7,6 +7,7 @@
     <SteamPublishID>0</SteamPublishID>
     <AssemblyName>Flank Preview</AssemblyName>
     <RootNamespace>Flank Preview</RootNamespace>
+    <ProjectGuid>{214e6607-f7c2-4436-9d9d-de870c66e7f3}</ProjectGuid>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <OutputPath>bin\Debug\</OutputPath>
@@ -30,10 +31,10 @@
     <Content Include="Config\XComEngine.ini" />
     <Content Include="Config\XComGame.ini" />
     <Content Include="Localization\XComGame.int" />
-    <Content Include="Src\FlankPreview\Classes\FlankPreviewFlagManager.uc">
+    <Content Include="Src\FlankPreview\Classes\FlankedUnitFlag.uc">
       <SubType>Content</SubType>
     </Content>
-    <Content Include="Src\FlankPreview\Classes\FlankPreviewUnitFlag.uc">
+    <Content Include="Src\FlankPreview\Classes\FlankPreviewFlagManager.uc">
       <SubType>Content</SubType>
     </Content>
     <Content Include="Src\FlankPreview\Classes\FlankPreviewVisibilityHelper.uc">

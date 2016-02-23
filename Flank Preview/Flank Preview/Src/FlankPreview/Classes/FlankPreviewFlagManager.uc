@@ -4,29 +4,29 @@ function RealizePreviewEndOfMoveLOS(GameplayTileData MoveToTileData)
 {
 	local int Index;
 	local UIUnitFlag kFlag;
-	local FlankPreviewUnitFlag kFlank;
+	local FlankedUnitFlag kFlankUnitFlag;
 
 	foreach m_arrFlags(kFlag)
 	{
-		if (kFlank == none)
-			kFlank = spawn(class'FlankPreviewUnitFlag', kFlag);
-
+	    kFlankUnitFlag = FlankedUnitFlag(kFlag);
 		Index = MoveToTileData.VisibleEnemies.Find('SourceID', kFlag.StoredObjectID);
 		if (Index == INDEX_NONE)
 		{
-			kFlank.FlankPreview(false, kFlag);
-			kFlag.RealizeLOSPreview(false);
+			kFlankUnitFlag.SetSpottedAndFlankedState(false, false);
 		}
 		else
 		{
-			if(class'FlankPreviewVisibilityHelper'.static.IsFlankedByLocation(Index, Movetotiledata))
+		    // if flanked
+			if(class'FlankPreviewVisibilityHelper'.static.IsFlankedByLocation(Index, MoveToTileData))
 			{
-				kFlank.FlankPreview(true, kFlag);
-				//RealizeLOSPreview(false); //This doesn't work?
+			    // display yellow icon
+		        kFlankUnitFlag.SetSpottedAndFlankedState(true, true);
 			}
 			else
-				kFlank.FlankPreview(false, kFlag);
-				kFlag.RealizeLOSPreview(true);
+			{
+			    // display red icon
+				kFlankUnitFlag.SetSpottedAndFlankedState(true, false);
+            }
 		}
 	}
 }
