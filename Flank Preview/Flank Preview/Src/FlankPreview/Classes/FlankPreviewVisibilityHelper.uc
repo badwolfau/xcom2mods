@@ -5,7 +5,7 @@ simulated static function bool IsFlankedByLocation(int TargetIndex, GameplayTile
 {
 	local XComGameState_Unit TargetState, SourceState;
 	local XComGameStateHistory History;
-	local TTile ttSource, ttTarget;
+	local TTile ttSource, ttTarget, ttDiff;
 	local vector vSource, vTarget;
 	local float fCoverAngle;
 	local ECoverType TargetCover;
@@ -13,10 +13,15 @@ simulated static function bool IsFlankedByLocation(int TargetIndex, GameplayTile
 	local int i,j, TargetIndexForPeek;
 	local array< GameRulesCache_VisibilityInfo > PeekVisInfo;
 	
+
 	History = `XCOMHISTORY;
-	TargetState = XComGameState_Unit(History.GetGameStateForObjectID(Location.VisibleEnemies[TargetIndex].SourceID,, StartAtHistoryIndex)); //Find the VisibleEnemy[index] we want
-	SourceState = XComGameState_Unit(History.GetGameStateForObjectID(Location.SourceObjectID,, StartAtHistoryIndex)); //Source unit required for GetAllEnemiesForLocation() so it can find the right team
 	
+	SourceState = XComGameState_Unit(History.GetGameStateForObjectID(Location.SourceObjectID,, StartAtHistoryIndex)); //Source unit required for GetAllEnemiesForLocation() so it can find the right team
+	if(!SourceState.CanFlank() || SourceState.IsMeleeOnly()) //Some units cannot flank
+		return false;
+	
+	TargetState = XComGameState_Unit(History.GetGameStateForObjectID(Location.VisibleEnemies[TargetIndex].SourceID,, StartAtHistoryIndex)); //Find the VisibleEnemy[index] we want
+		
 	if( TargetState != None && TargetState.CanTakeCover() )		//Must be valid target, target must be able to actually take cover.
 	{
 		//Check to see if we have a direct flank without peeking
@@ -30,51 +35,55 @@ simulated static function bool IsFlankedByLocation(int TargetIndex, GameplayTile
 		if(TargetCover == CT_None)
 			return true;
 
-
 		//Time to check for peeking...
-		else
-		{
-			PeekData = `XWORLD.GetCachedCoverAndPeekData(ttSource);
-
-			for(i=0; i < ArrayCount(PeekData.CoverDirectionInfo); i++) //Static array loop
+		if(Location.VisibleEnemies[TargetIndex].TargetCover == CT_None) //If the target is flanking our position, we cannot peek flank them...
 			{
-				if(PeekData.CoverDirectionInfo[i].bHasCover == 0) //Int as bool :P
-					continue;
-				else
+				ttDiff.X = abs(ttSource.X - ttTarget.X);						//...unless we're both standing at a corner!
+				ttDiff.Y = abs(ttSource.Y - ttTarget.Y);
+				if(ttDiff.X > 1 || ttDiff.Y > 1)  
+					return false;
+			}
+
+		PeekData = `XWORLD.GetCachedCoverAndPeekData(ttSource);
+
+		for(i=0; i < ArrayCount(PeekData.CoverDirectionInfo); i++) //Static array loop
+		{
+			if(PeekData.CoverDirectionInfo[i].bHasCover == 0) //Int as bool :P
+				continue;
+			else
+			{
+				//CHECK LEFT SIDE
+				if(PeekData.CoverDirectionInfo[i].LeftPeek.bHasPeekAround == 1)
 				{
-					//CHECK LEFT SIDE
-					if(PeekData.CoverDirectionInfo[i].LeftPeek.bHasPeekAround == 1)
+					ttSource = PeekData.CoverDirectionInfo[i].LeftPeek.PeekTile;
+					vSource = `XWORLD.GetPositionFromTileCoordinates(ttSource);
+					GetAllEnemiesForLocation(vSource, SourceState.ControllingPlayer.ObjectID, PeekVisInfo);
+					if(PeekVisInfo.Length > 0)
 					{
-						ttSource = PeekData.CoverDirectionInfo[i].LeftPeek.PeekTile;
-						vSource = `XWORLD.GetPositionFromTileCoordinates(ttSource);
-						GetAllEnemiesForLocation(vSource, SourceState.ControllingPlayer.ObjectID, PeekVisInfo);
-						if(PeekVisInfo.Length > 0)
+						for(j=0; j <= PeekVisInfo.Length; j++) //What if we don't find it? Is that possible?
 						{
-							for(j=0; j <= PeekVisInfo.Length; j++) //What if we don't find it? Is that possible?
-							{
-								if(PeekVisInfo[j].SourceID == TargetState.ObjectID)
-									TargetIndexForPeek = j;
-							}
-							if(PeekVisInfo[TargetIndexForPeek].CoverDirection == -1)
-								return true;
+							if(PeekVisInfo[j].SourceID == TargetState.ObjectID)
+								TargetIndexForPeek = j;
 						}
+						if(PeekVisInfo[TargetIndexForPeek].CoverDirection == -1)
+							return true;
 					}
-					//CHECK RIGHT SIDE
-					if(PeekData.CoverDirectionInfo[i].RightPeek.bHasPeekAround == 1)
+				}
+				//CHECK RIGHT SIDE
+				if(PeekData.CoverDirectionInfo[i].RightPeek.bHasPeekAround == 1)
+				{
+					ttSource = PeekData.CoverDirectionInfo[i].RightPeek.PeekTile;
+					vSource = `XWORLD.GetPositionFromTileCoordinates(ttSource);
+					GetAllEnemiesForLocation(vSource, SourceState.ControllingPlayer.ObjectID, PeekVisInfo);
+					if(PeekVisInfo.Length > 0)
 					{
-						ttSource = PeekData.CoverDirectionInfo[i].RightPeek.PeekTile;
-						vSource = `XWORLD.GetPositionFromTileCoordinates(ttSource);
-						GetAllEnemiesForLocation(vSource, SourceState.ControllingPlayer.ObjectID, PeekVisInfo);
-						if(PeekVisInfo.Length > 0)
+					for(j=0; j <= PeekVisInfo.Length; j++) //What if we don't find it? Is that possible?
 						{
-							for(j=0; j <= PeekVisInfo.Length; j++) //What if we don't find it? Is that possible?
-							{
-								if(PeekVisInfo[j].SourceID == TargetState.ObjectID)
-									TargetIndexForPeek = j;
-							}
-							if(PeekVisInfo[TargetIndexForPeek].CoverDirection == -1)
-								return true;
+							if(PeekVisInfo[j].SourceID == TargetState.ObjectID)
+								TargetIndexForPeek = j;
 						}
+						if(PeekVisInfo[TargetIndexForPeek].CoverDirection == -1)
+							return true;
 					}
 				}
 			}
