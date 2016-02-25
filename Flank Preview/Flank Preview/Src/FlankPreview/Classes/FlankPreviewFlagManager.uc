@@ -21,8 +21,6 @@ function RealizePreviewEndOfMoveLOS(GameplayTileData MoveToTileData)
 		}
 		else
 		{
-		    kFlag.m_bSpotted = true;
-
 		    // if flanked
 			if(class'FlankPreviewVisibilityHelper'.static.IsFlankedByLocation(Index, MoveToTileData))
 			{
@@ -38,7 +36,7 @@ function RealizePreviewEndOfMoveLOS(GameplayTileData MoveToTileData)
 	}
 }
 
-simulated function SetSpottedAndFlankedState(UIUnitFlag kFlag, bool spotted, bool flanked)
+function SetSpottedAndFlankedState(UIUnitFlag kFlag, bool spotted, bool flanked)
 {
 	local ASValue myValue;
 	local Array<ASValue> myArray;
@@ -46,7 +44,7 @@ simulated function SetSpottedAndFlankedState(UIUnitFlag kFlag, bool spotted, boo
 
 	m_bFlanked = (flankedUnitsArr.find(kFlag) != INDEX_NONE);
 
-	if( spotted == kFlag.m_bSpotted && flanked == m_bFlanked) return;
+	if (spotted == kFlag.m_bSpotted && flanked == m_bFlanked) return;
 
     // save the state
 	kFlag.m_bSpotted = spotted;
@@ -67,10 +65,4 @@ simulated function SetSpottedAndFlankedState(UIUnitFlag kFlag, bool spotted, boo
     myArray.AddItem( myValue );
 
 	kFlag.Invoke("SetSpottedState", myArray);
-}
-
-simulated function RemoveFlag( UIUnitFlag kFlag )
-{
-	super.RemoveFlag(kFlag);
-
 }
