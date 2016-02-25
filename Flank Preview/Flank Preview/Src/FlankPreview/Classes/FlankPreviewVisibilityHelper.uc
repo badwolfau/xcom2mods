@@ -65,8 +65,6 @@ simulated static function bool IsFlankedByLocation(int TargetIndex, GameplayTile
 						{
 							if(PeekVisInfo[j].SourceID == TargetState.ObjectID)
 								TargetIndexForPeek = j;
-							else 
-								return false;
 						}
 						if(PeekVisInfo[TargetIndexForPeek].CoverDirection == -1)
 							return true;
@@ -84,8 +82,6 @@ simulated static function bool IsFlankedByLocation(int TargetIndex, GameplayTile
 						{
 							if(PeekVisInfo[j].SourceID == TargetState.ObjectID)
 								TargetIndexForPeek = j;
-							else
-								return false;
 						}
 						if(PeekVisInfo[TargetIndexForPeek].CoverDirection == -1)
 							return true;
