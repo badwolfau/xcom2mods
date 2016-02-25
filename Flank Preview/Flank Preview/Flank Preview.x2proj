@@ -31,9 +31,6 @@
     <Content Include="Config\XComEngine.ini" />
     <Content Include="Config\XComGame.ini" />
     <Content Include="Localization\XComGame.int" />
-    <Content Include="Src\FlankPreview\Classes\FlankedUnitFlag.uc">
-      <SubType>Content</SubType>
-    </Content>
     <Content Include="Src\FlankPreview\Classes\FlankPreviewFlagManager.uc">
       <SubType>Content</SubType>
     </Content>
