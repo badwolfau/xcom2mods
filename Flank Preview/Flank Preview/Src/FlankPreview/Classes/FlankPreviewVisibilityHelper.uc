@@ -16,8 +16,9 @@ simulated static function bool IsFlankedByLocation(int TargetIndex, GameplayTile
 
 	History = `XCOMHISTORY;
 	
-	SourceState = XComGameState_Unit(History.GetGameStateForObjectID(Location.SourceObjectID,, StartAtHistoryIndex)); //Source unit required for GetAllEnemiesForLocation() so it can find the right team
-	if(!SourceState.CanFlank() || SourceState.IsMeleeOnly()) //Some units cannot flank
+	SourceState = XComGameState_Unit(History.GetGameStateForObjectID(Location.SourceObjectID,, StartAtHistoryIndex));	//Source unit
+	
+	if(!SourceState.CanFlank() || SourceState.IsMeleeOnly())	 //Some units cannot take flanking shots
 		return false;
 	
 	TargetState = XComGameState_Unit(History.GetGameStateForObjectID(Location.VisibleEnemies[TargetIndex].SourceID,, StartAtHistoryIndex)); //Find the VisibleEnemy[index] we want
@@ -36,7 +37,7 @@ simulated static function bool IsFlankedByLocation(int TargetIndex, GameplayTile
 			return true;
 
 		//Time to check for peeking...
-		if(Location.VisibleEnemies[TargetIndex].TargetCover == CT_None) //If the target is flanking our position, we cannot peek flank them...
+		if(Location.VisibleEnemies[TargetIndex].TargetCover == CT_None)			//If the target is flanking our position, we cannot peek flank them...
 			{
 				ttDiff.X = abs(ttSource.X - ttTarget.X);						//...unless we're both standing at a corner!
 				ttDiff.Y = abs(ttSource.Y - ttTarget.Y);
@@ -46,9 +47,9 @@ simulated static function bool IsFlankedByLocation(int TargetIndex, GameplayTile
 
 		PeekData = `XWORLD.GetCachedCoverAndPeekData(ttSource);
 
-		for(i=0; i < ArrayCount(PeekData.CoverDirectionInfo); i++) //Static array loop
+		for(i=0; i < ArrayCount(PeekData.CoverDirectionInfo); i++)		//Static array loop
 		{
-			if(PeekData.CoverDirectionInfo[i].bHasCover == 0) //Int as bool :P
+			if(PeekData.CoverDirectionInfo[i].bHasCover == 0)		//Old school int as bool
 				continue;
 			else
 			{
@@ -60,10 +61,12 @@ simulated static function bool IsFlankedByLocation(int TargetIndex, GameplayTile
 					GetAllEnemiesForLocation(vSource, SourceState.ControllingPlayer.ObjectID, PeekVisInfo);
 					if(PeekVisInfo.Length > 0)
 					{
-						for(j=0; j <= PeekVisInfo.Length; j++) //What if we don't find it? Is that possible?
+						for(j=0; j < PeekVisInfo.Length; j++)
 						{
 							if(PeekVisInfo[j].SourceID == TargetState.ObjectID)
 								TargetIndexForPeek = j;
+							else 
+								return false;
 						}
 						if(PeekVisInfo[TargetIndexForPeek].CoverDirection == -1)
 							return true;
@@ -77,10 +80,12 @@ simulated static function bool IsFlankedByLocation(int TargetIndex, GameplayTile
 					GetAllEnemiesForLocation(vSource, SourceState.ControllingPlayer.ObjectID, PeekVisInfo);
 					if(PeekVisInfo.Length > 0)
 					{
-					for(j=0; j <= PeekVisInfo.Length; j++) //What if we don't find it? Is that possible?
+					for(j=0; j < PeekVisInfo.Length; j++)
 						{
 							if(PeekVisInfo[j].SourceID == TargetState.ObjectID)
 								TargetIndexForPeek = j;
+							else
+								return false;
 						}
 						if(PeekVisInfo[TargetIndexForPeek].CoverDirection == -1)
 							return true;
