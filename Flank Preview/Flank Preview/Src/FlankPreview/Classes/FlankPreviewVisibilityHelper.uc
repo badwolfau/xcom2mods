@@ -1,5 +1,47 @@
 class FlankPreviewVisibilityHelper extends X2TacticalVisibilityHelpers;
 
+
+//Looks from a location to an interactive object
+simulated static function bool CanLocationSeeHackableObj(XComGameState_InteractiveObject HackableObj, GameplayTileData Location)
+{
+	local GameRulesCache_VisibilityInfo VisibilityInfo;
+	local XComGameState_Unit SourceState;
+
+	`XWORLD.CanSeeTileToTile(Location.EventTile, HackableObj.TileLocation, VisibilityInfo);
+	SourceState = XComGameState_Unit(`XCOMHISTORY.GetGameStateForObjectID(Location.SourceObjectID,,-1));
+
+	if(VisibilityInfo.bClearLOS)
+	{
+		if(VisibilityInfo.DefaultTargetDist <= (SourceState.GetVisibilityRadius() * 100000)) //MUST TEST - LIKELY TOO SHORT, HACKING HAS A LONG RANGE
+			return true;
+	}
+	return false;
+}
+
+
+//Function that looks for LOS from a unit to an object
+simulated static function bool CanLocationSeeObject(int TargetID, GameplayTileData Location)
+{
+	local GameRulesCache_VisibilityInfo VisibilityInfo;
+	local XComGameState_Unit SourceState;
+
+	`XWORLD.CanSeeTileToTile(Location.EventTile, XComGameState_InteractiveObject(`XCOMHISTORY.GetGameStateForObjectID(TargetID,,-1)).TileLocation, VisibilityInfo);
+	if(VisibilityInfo.bClearLOS)
+	{
+		SourceState = XComGameState_Unit(`XCOMHISTORY.GetGameStateForObjectID(Location.SourceObjectID,,-1));
+
+		if(SourceState.HasSquadSight())
+			return true;
+		else
+		{
+			if(VisibilityInfo.DefaultTargetDist <= (SourceState.GetVisibilityRadius() * 100000)) //What are these units??
+				return true;
+		}
+	}
+	return false;
+}
+
+
 //Function that figures out if the Location can see AND flank the target at TargetIndex
 simulated static function bool IsFlankedByLocation(int TargetIndex, GameplayTileData Location, optional int StartAtHistoryIndex = -1)
 {
@@ -12,17 +54,16 @@ simulated static function bool IsFlankedByLocation(int TargetIndex, GameplayTile
 	local CachedCoverAndPeekData PeekData;
 	local int i,j, TargetIndexForPeek;
 	local array< GameRulesCache_VisibilityInfo > PeekVisInfo;
-	
 
 	History = `XCOMHISTORY;
-	
+
 	SourceState = XComGameState_Unit(History.GetGameStateForObjectID(Location.SourceObjectID,, StartAtHistoryIndex));	//Source unit
-	
+
 	if(!SourceState.CanFlank() || SourceState.IsMeleeOnly())	 //Some units cannot take flanking shots
 		return false;
-	
+
 	TargetState = XComGameState_Unit(History.GetGameStateForObjectID(Location.VisibleEnemies[TargetIndex].SourceID,, StartAtHistoryIndex)); //Find the VisibleEnemy[index] we want
-		
+
 	if( TargetState != None && TargetState.CanTakeCover() )		//Must be valid target, target must be able to actually take cover.
 	{
 		//Check to see if we have a direct flank without peeking
@@ -32,7 +73,7 @@ simulated static function bool IsFlankedByLocation(int TargetIndex, GameplayTile
 		vTarget = `XWORLD.GetPositionFromTileCoordinates(ttTarget);
 		fCoverAngle = Location.VisibleEnemies[TargetIndex].TargetCoverAngle;
 		TargetCover = `XWORLD.GetCoverTypeForTarget(vSource, vTarget, fCoverAngle,);
-		
+
 		if(TargetCover == CT_None)
 			return true;
 
@@ -41,8 +82,10 @@ simulated static function bool IsFlankedByLocation(int TargetIndex, GameplayTile
 			{
 				ttDiff.X = abs(ttSource.X - ttTarget.X);						//...unless we're both standing at a corner!
 				ttDiff.Y = abs(ttSource.Y - ttTarget.Y);
-				if(ttDiff.X > 1 || ttDiff.Y > 1)  
+				if(ttDiff.X > 1 || ttDiff.Y > 1)
 					return false;
+				//else
+				//	return true;		//Not always true in the case of Z axis difference
 			}
 
 		PeekData = `XWORLD.GetCachedCoverAndPeekData(ttSource);
@@ -66,7 +109,7 @@ simulated static function bool IsFlankedByLocation(int TargetIndex, GameplayTile
 							if(PeekVisInfo[j].SourceID == TargetState.ObjectID)
 								TargetIndexForPeek = j;
 						}
-						if(PeekVisInfo[TargetIndexForPeek].CoverDirection == -1)
+						if(PeekVisInfo[TargetIndexForPeek].CoverDirection == -1)	// Investigate for corner case
 							return true;
 					}
 				}
@@ -83,7 +126,7 @@ simulated static function bool IsFlankedByLocation(int TargetIndex, GameplayTile
 							if(PeekVisInfo[j].SourceID == TargetState.ObjectID)
 								TargetIndexForPeek = j;
 						}
-						if(PeekVisInfo[TargetIndexForPeek].CoverDirection == -1)
+						if(PeekVisInfo[TargetIndexForPeek].CoverDirection == -1)	// Investigate for corner case
 							return true;
 					}
 				}
