@@ -37,6 +37,9 @@
     <Content Include="Src\FlankPreview\Classes\FlankPreviewVisibilityHelper.uc">
       <SubType>Content</SubType>
     </Content>
+    <Content Include="Src\FlankPreview\Classes\HackableObjectIcon.uc">
+      <SubType>Content</SubType>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildLocalExtensionPath)\XCOM2.targets" />
 </Project>
