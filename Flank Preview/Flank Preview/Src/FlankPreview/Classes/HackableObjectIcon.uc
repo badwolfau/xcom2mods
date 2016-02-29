@@ -4,9 +4,7 @@ const ICON_SIZE = 32;
 
 simulated function HackableObjectIcon Init(X2VisualizerInterface Visualizer)
 {
-    local UIBGBox FlankMarker;
     local UIImage img;
-    local HackableObjectIcon hackableObjectIcon;
 
 	InitIcon(,,false,true,ICON_SIZE,Visualizer.GetMyHUDIconColor());
 

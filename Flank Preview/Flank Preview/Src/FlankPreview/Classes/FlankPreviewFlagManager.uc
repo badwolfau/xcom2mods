@@ -6,34 +6,68 @@ function RealizePreviewEndOfMoveLOS(GameplayTileData MoveToTileData)
 {
 	local int Index;
 	local UIUnitFlag kFlag;
+	local GameRulesCache_VisibilityInfo VisibilityInfo;
+	local XComGameState_Unit SourceUnitState, TargetUnitState;
 
     // reset flankedArr to prevent a memory leak
 	if (m_arrFlags.length == 0) {
 	    flankedUnitsArr.length = 0;
 	}
 
+//    `log("------------------");
+//    `log("CURRENT UNIT = " @ m_lastActiveUnit);
+
+    SourceUnitState = XComGameState_Unit(`XCOMHISTORY.GetGameStateForObjectID(m_lastActiveUnit.ObjectID,,-1));
+//    `log("CURRENT UNIT hasSquadSight = " @ SourceUnitState.HasSquadSight());
+
 	foreach m_arrFlags(kFlag)
 	{
+//	    `log("Enemy ID = " @ kFlag.StoredObjectID);
+	    TargetUnitState = XComGameState_Unit(`XCOMHISTORY.GetGameStateForObjectID(kFlag.StoredObjectID,,-1));
+
 		Index = MoveToTileData.VisibleEnemies.Find('SourceID', kFlag.StoredObjectID);
 		if (Index == INDEX_NONE)
 		{
+            if (TargetUnitState != none && SourceUnitState.HasSquadSight() && `XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, TargetUnitState.TileLocation, VisibilityInfo))
+            {
+//                `log(class'X2TacticalGameRulesetDataStructures'.static.GetVisibilityInfoDebugString(VisibilityInfo));
+                if (VisibilityInfo.bClearLOS)
+                {
+//                    `log("SQUAD SIGHT Enemy ID = " @ kFlag.StoredObjectID);
+                    displaySpottedIcon(kFlag, MoveToTileData.EventTile, SourceUnitState, TargetUnitState, VisibilityInfo);
+                    continue;
+                }
+            }
+
+            // remove icon
 			SetSpottedAndFlankedState(kFlag, false, false);
 		}
 		else
 		{
-		    // if flanked
-			if(class'FlankPreviewVisibilityHelper'.static.IsFlankedByLocation(Index, MoveToTileData))
-			{
-			    // display yellow icon
-		        SetSpottedAndFlankedState(kFlag, true, true);
-			}
-			else
-			{
-			    // display red icon
-				SetSpottedAndFlankedState(kFlag, true, false);
-            }
+//		    `log("SEE Enemy ID = " @ kFlag.StoredObjectID);
+		    VisibilityInfo = MoveToTileData.VisibleEnemies[Index];
+            displaySpottedIcon(kFlag, MoveToTileData.EventTile, SourceUnitState, TargetUnitState, VisibilityInfo);
 		}
 	}
+}
+
+function displaySpottedIcon(UIUnitFlag kFlag,
+                           TTile tile,
+                           XComGameState_Unit SourceUnitState,
+                           XComGameState_Unit TargetUnitState,
+                           GameRulesCache_VisibilityInfo VisibilityInfo)
+{
+    // if flanked
+    if(class'FlankPreviewVisibilityHelper'.static.IsFlankedByLocation(tile, SourceUnitState, TargetUnitState, VisibilityInfo))
+    {
+        // display yellow icon
+        SetSpottedAndFlankedState(kFlag, true, true);
+    }
+    else
+    {
+        // display red icon
+        SetSpottedAndFlankedState(kFlag, true, false);
+    }
 }
 
 function SetSpottedAndFlankedState(UIUnitFlag kFlag, bool spotted, bool flanked)

@@ -38,44 +38,38 @@ simulated static function bool CanLocationSeeObject(int TargetID, GameplayTileDa
 }
 
 
-//Function that figures out if the Location can see AND flank the target at TargetIndex
-simulated static function bool IsFlankedByLocation(int TargetIndex, GameplayTileData Location, optional int StartAtHistoryIndex = -1)
+//Function that figures out if the Location can see AND flank the target
+simulated static function bool IsFlankedByLocation(TTile ttSource,
+                                                   XComGameState_Unit SourceUnitState,
+                                                   XComGameState_Unit TargetUnitState,
+                                                   GameRulesCache_VisibilityInfo VisibilityInfo)
 {
-	local XComGameState_Unit TargetState, SourceState;
-	local XComGameStateHistory History;
-	local TTile ttSource, ttTarget, ttDiff;
+	local TTile ttTarget, ttDiff;
 	local vector vSource, vTarget;
 	local float fCoverAngle;
 	local ECoverType TargetCover;
 	local CachedCoverAndPeekData PeekData;
-	local int i,j, TargetIndexForPeek;
+	local int i;
 	local GameRulesCache_VisibilityInfo PeekVisInfo;
 	
 
-	History = `XCOMHISTORY;
-	
-	SourceState = XComGameState_Unit(History.GetGameStateForObjectID(Location.SourceObjectID,, StartAtHistoryIndex));	//Source unit
-	
-	if(!SourceState.CanFlank() || SourceState.IsMeleeOnly())	//Some units cannot take flanking shots
+	if(!SourceUnitState.CanFlank() || !SourceUnitState.GetMyTemplate().CanFlankUnits || SourceUnitState.IsMeleeOnly())	//Some units cannot take flanking shots
 		return false;
 	
-	TargetState = XComGameState_Unit(History.GetGameStateForObjectID(Location.VisibleEnemies[TargetIndex].SourceID,, StartAtHistoryIndex)); //Find the VisibleEnemy[index] we want
-		
-	if( TargetState != None && TargetState.CanTakeCover() )		//Must be valid target, target must be able to actually take cover.
+	if( TargetUnitState != None && TargetUnitState.CanTakeCover() )		//Must be valid target, target must be able to actually take cover.
 	{
 		//Check to see if we have a direct flank without peeking
-		ttSource = Location.EventTile;
-		ttTarget = TargetState.TileLocation;
+		ttTarget = TargetUnitState.TileLocation;
 		vSource = `XWORLD.GetPositionFromTileCoordinates(ttSource);
 		vTarget = `XWORLD.GetPositionFromTileCoordinates(ttTarget);
-		fCoverAngle = Location.VisibleEnemies[TargetIndex].TargetCoverAngle;
+		fCoverAngle = VisibilityInfo.TargetCoverAngle;
 		TargetCover = `XWORLD.GetCoverTypeForTarget(vSource, vTarget, fCoverAngle,);
 		
 		if(TargetCover == CT_None)
 			return true;
 
 		//Time to check for peeking...
-		if(Location.VisibleEnemies[TargetIndex].TargetCover == CT_None)			//If the target is flanking our position, we cannot peek flank them...
+		if(VisibilityInfo.TargetCover == CT_None)			//If the target is flanking our position, we cannot peek flank them...
 			{
 				ttDiff.X = abs(ttSource.X - ttTarget.X);						//...unless we're both standing at a corner!
 				ttDiff.Y = abs(ttSource.Y - ttTarget.Y);
