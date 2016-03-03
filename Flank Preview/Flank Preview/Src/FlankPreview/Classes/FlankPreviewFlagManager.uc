@@ -16,7 +16,7 @@ function RealizePreviewEndOfMoveLOS(GameplayTileData MoveToTileData)
 	local UISpecialMissionHUD_Arrows			ArrowManager;
 	local UISpecialMissionHUD					SpecialHUDRef;
 	local T3DArrow								ObjArrow;
-	local StateObjectReference					EmptyRef;
+//	local StateObjectReference					EmptyRef;
 	local TTile									ArrowTile;
 	
 	SpecialHUDRef = `PRES.GetSpecialMissionHUD();
@@ -31,56 +31,60 @@ function RealizePreviewEndOfMoveLOS(GameplayTileData MoveToTileData)
 		switch(ObjArrow.Icon)
 		{
 			//Workstation hack
-			case "img:///Gotcha.UI.WorkStation_Sighted":
-			case "img:///UILibrary_Common.Objective_HackWorkstation":
-				if(SourceUnitState.FindAbility('IntrusionProtocol') != EmptyRef)
-				{
-					if(`XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, ArrowTile, VisibilityInfo) && VisibilityInfo.bClearLOS && VisibilityInfo.DefaultTargetDist <= (SourceUnitState.GetVisibilityRadius() * hackingDistance))
-					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///Gotcha.UI.WorkStation_Sighted");
-				else
-					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///UILibrary_Common.Objective_HackWorkstation");
-				}
-				break;
-			//Broadcast hack (second last mission)
-			case "img:///UILibrary_Common.Objective_Broadcast":
-			case "img:///Gotcha.UI.Objective_Broadcast_Sighted":
-				if(SourceUnitState.FindAbility('IntrusionProtocol') != EmptyRef)
-				{
-					if(`XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, ArrowTile, VisibilityInfo) && VisibilityInfo.bClearLOS && VisibilityInfo.DefaultTargetDist <= (SourceUnitState.GetVisibilityRadius() * hackingDistance))
-					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///Gotcha.UI.Objective_Broadcast_Sighted");
-				else
-					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///UILibrary_Common.Objective_Broadcast");
-				}
-				break;
-			//UFO hack
-			case "img:///UILibrary_Common.Objective_UFO":
-			case "img:///Gotcha.UI.Objective_UFO_Sighted":
-				if(SourceUnitState.FindAbility('IntrusionProtocol') != EmptyRef)
-				{
-					if(`XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, ArrowTile, VisibilityInfo) && VisibilityInfo.bClearLOS && VisibilityInfo.DefaultTargetDist <= (SourceUnitState.GetVisibilityRadius() * hackingDistance))
-					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///Gotcha.UI.Objective_UFO_Sighted");
-				else
-					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///UILibrary_Common.Objective_UFO");
-				}
-				break;
+//			case "img:///Gotcha.UI.WorkStation_Sighted":
+//			case "img:///UILibrary_Common.Objective_HackWorkstation":
+//				if(SourceUnitState.FindAbility('IntrusionProtocol') != EmptyRef)
+//				{
+//					if(`XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, ArrowTile, VisibilityInfo) && VisibilityInfo.bClearLOS && VisibilityInfo.DefaultTargetDist <= (SourceUnitState.GetVisibilityRadius() * hackingDistance))
+//					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///Gotcha.UI.WorkStation_Sighted");
+//				else
+//					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///UILibrary_Common.Objective_HackWorkstation");
+//				}
+//				break;
+//			//Broadcast hack (second last mission)
+//			case "img:///UILibrary_Common.Objective_Broadcast":
+//			case "img:///Gotcha.UI.Objective_Broadcast_Sighted":
+//				if(SourceUnitState.FindAbility('IntrusionProtocol') != EmptyRef)
+//				{
+//					if(`XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, ArrowTile, VisibilityInfo) && VisibilityInfo.bClearLOS && VisibilityInfo.DefaultTargetDist <= (SourceUnitState.GetVisibilityRadius() * hackingDistance))
+//					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///Gotcha.UI.Objective_Broadcast_Sighted");
+//				else
+//					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///UILibrary_Common.Objective_Broadcast");
+//				}
+//				break;
+//			//UFO hack
+//			case "img:///UILibrary_Common.Objective_UFO":
+//			case "img:///Gotcha.UI.Objective_UFO_Sighted":
+//				if(SourceUnitState.FindAbility('IntrusionProtocol') != EmptyRef)
+//				{
+//					if(`XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, ArrowTile, VisibilityInfo) && VisibilityInfo.bClearLOS && VisibilityInfo.DefaultTargetDist <= (SourceUnitState.GetVisibilityRadius() * hackingDistance))
+//					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///Gotcha.UI.Objective_UFO_Sighted");
+//				else
+//					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///UILibrary_Common.Objective_UFO");
+//				}
+//				break;
+
 			//Destroy alien transmitter
-			case "img:///Gotcha.UI.DestructObj_Sighted":
+			case "img:///Gotcha.Objective_DestroyAlienFacility_spotted":
 			case "img:///Gotcha.UI.DestructObj_SquadSight":
 			case "img:///UILibrary_Common.Objective_DestroyAlienFacility":
-				if(`XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, ArrowTile, VisibilityInfo) && VisibilityInfo.bClearLOS) 
+				if (`XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, ArrowTile, VisibilityInfo) && VisibilityInfo.bClearLOS)
 				{
-					if(VisibilityInfo.DefaultTargetDist <= (SourceUnitState.GetVisibilityRadius() * 100000))
+					if (VisibilityInfo.DefaultTargetDist <= (SourceUnitState.GetVisibilityRadius() * 100000))
 					{
-						ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///Gotcha.UI.DestructObj_Sighted");
+						ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///Gotcha.Objective_DestroyAlienFacility_spotted");
 					}
 					else 
 					{
-						if(SourceUnitState.HasSquadSight())
-							ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///Gotcha.UI.DestructObj_SquadSight");
+						if (SourceUnitState.HasSquadSight()) {
+							ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///Gotcha.Objective_DestroyAlienFacility_spotted");
+                        }
 					}
 				}
 				else
+				{
 					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///UILibrary_Common.Objective_DestroyAlienFacility");
+                }
 				break;
 			default:
 				break;
