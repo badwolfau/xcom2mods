@@ -36,9 +36,9 @@ function RealizePreviewEndOfMoveLOS(GameplayTileData MoveToTileData)
 				if(SourceUnitState.FindAbility('IntrusionProtocol') != EmptyRef)
 				{
 					if(`XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, ArrowTile, VisibilityInfo) && VisibilityInfo.bClearLOS && VisibilityInfo.DefaultTargetDist <= (SourceUnitState.GetVisibilityRadius() * hackingDistance))
-					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, eUIState_Highlight, ObjArrow.arrowCounter, "img:///Gotcha.UI.WorkStation_Sighted");
+					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///Gotcha.UI.WorkStation_Sighted");
 				else
-					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, eUIState_Highlight, ObjArrow.arrowCounter, "img:///UILibrary_Common.Objective_HackWorkstation");
+					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///UILibrary_Common.Objective_HackWorkstation");
 				}
 				break;
 			//Broadcast hack (second last mission)
@@ -47,9 +47,9 @@ function RealizePreviewEndOfMoveLOS(GameplayTileData MoveToTileData)
 				if(SourceUnitState.FindAbility('IntrusionProtocol') != EmptyRef)
 				{
 					if(`XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, ArrowTile, VisibilityInfo) && VisibilityInfo.bClearLOS && VisibilityInfo.DefaultTargetDist <= (SourceUnitState.GetVisibilityRadius() * hackingDistance))
-					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, eUIState_Highlight, ObjArrow.arrowCounter, "img:///Gotcha.UI.Objective_Broadcast_Sighted");
+					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///Gotcha.UI.Objective_Broadcast_Sighted");
 				else
-					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, eUIState_Highlight, ObjArrow.arrowCounter, "img:///UILibrary_Common.Objective_Broadcast");
+					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///UILibrary_Common.Objective_Broadcast");
 				}
 				break;
 			//UFO hack
@@ -58,9 +58,9 @@ function RealizePreviewEndOfMoveLOS(GameplayTileData MoveToTileData)
 				if(SourceUnitState.FindAbility('IntrusionProtocol') != EmptyRef)
 				{
 					if(`XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, ArrowTile, VisibilityInfo) && VisibilityInfo.bClearLOS && VisibilityInfo.DefaultTargetDist <= (SourceUnitState.GetVisibilityRadius() * hackingDistance))
-					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, eUIState_Highlight, ObjArrow.arrowCounter, "img:///Gotcha.UI.Objective_UFO_Sighted");
+					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///Gotcha.UI.Objective_UFO_Sighted");
 				else
-					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, eUIState_Highlight, ObjArrow.arrowCounter, "img:///UILibrary_Common.Objective_UFO");
+					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///UILibrary_Common.Objective_UFO");
 				}
 				break;
 			//Destroy alien transmitter
@@ -71,16 +71,16 @@ function RealizePreviewEndOfMoveLOS(GameplayTileData MoveToTileData)
 				{
 					if(VisibilityInfo.DefaultTargetDist <= (SourceUnitState.GetVisibilityRadius() * 100000))
 					{
-						ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, eUIState_Highlight, ObjArrow.arrowCounter, "img:///Gotcha.UI.DestructObj_Sighted");
+						ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///Gotcha.UI.DestructObj_Sighted");
 					}
 					else 
 					{
 						if(SourceUnitState.HasSquadSight())
-							ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, eUIState_Highlight, ObjArrow.arrowCounter, "img:///Gotcha.UI.DestructObj_SquadSight");
+							ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///Gotcha.UI.DestructObj_SquadSight");
 					}
 				}
 				else
-					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, eUIState_Highlight, ObjArrow.arrowCounter, "img:///UILibrary_Common.Objective_DestroyAlienFacility");
+					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///UILibrary_Common.Objective_DestroyAlienFacility");
 				break;
 			default:
 				break;
