@@ -23,6 +23,9 @@
     <Folder Include="Src\FlankPreview\Classes\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\Gotcha.upk">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="ModPreview.jpg">
       <SubType>Content</SubType>
     </Content>
