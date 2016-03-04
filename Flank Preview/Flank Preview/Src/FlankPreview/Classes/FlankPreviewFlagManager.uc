@@ -111,7 +111,7 @@ function RealizePreviewEndOfMoveLOS(GameplayTileData MoveToTileData)
 //	    `log("kFlag = " @ flagObj);
 
 	    TargetUnitState = XComGameState_Unit(flagObj);
-	    destructibleObject = XComGameState_Destructible(flagObj);
+	    destructibleObject = XComGameState_Destructible(flagObj);		//TODO: Remove this section when objective LOS is fully ported to the Arrow mechanics above
 	    interactiveObject = XComGameState_InteractiveObject(flagObj);
 
 
