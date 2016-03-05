@@ -60,7 +60,7 @@ private function processUnitsWithHealth(GameplayTileData MoveToTileData, XComGam
         if (interactiveObject != none)
         {
             ObjArrow = getArrowObject(class'GotchaUnitFlagHelper'.static.getUnitFlagLocation(kFlag));
-//            `log("ObjArrow=" @ObjArrow.Icon);
+//            `log("interactiveObject=" @ObjArrow.Icon);
 
             // can see via SquadSight
             if (`XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, interactiveObject.TileLocation, VisibilityInfo) && VisibilityInfo.bClearLOS)
@@ -135,11 +135,13 @@ private function processHackableObjectsWithoutHealth(TTile eventTile, XComGameSt
     // Mission: Recover Item from train
     foreach `XCOMHISTORY.IterateByClassType(class'XComGameState_ObjectiveInfo', objectiveInfo)
     {
+        // skip objects that have been alredy processed by "WithHealth" processor
         destructibleObject = XComGameState_Destructible(`XCOMHISTORY.GetGameStateComponentForObjectID(objectiveInfo.ObjectID, class'XComGameState_Destructible'));
-        if (destructibleObject == none) continue;
+        if (destructibleObject == none || hasUnitFlag(destructibleObject.ObjectID)) continue;
 
         testLocation = `XWORLD.GetPositionFromTileCoordinates(destructibleObject.TileLocation);
         ObjArrow = getArrowObject(testLocation);
+//        `log("HackableObjectWithoutHealth=" @ObjArrow.Icon);
 
         // display Hack icon obly if unit has IntrusionProtocol skill
         if (SourceUnitState.FindAbility('IntrusionProtocol') != EmptyRef)
@@ -163,6 +165,17 @@ private function processHackableObjectsWithoutHealth(TTile eventTile, XComGameSt
         // clear arrow by default
         displayArrow(ObjArrow, eUVS_NotVisible);
     }
+}
+
+private function bool hasUnitFlag(int objectId)
+{
+    local UIUnitFlag kFlag;
+
+    foreach m_arrFlags(kFlag)
+    {
+        if (kFlag.StoredObjectID == objectId) return true;
+    }
+    return false;
 }
 
 private function T3DArrow getArrowObject(vector vUnitLoc)
@@ -282,6 +295,7 @@ private function displayArrow(T3DArrow ObjArrow, EUnitVisibilityState unitVState
 	
     // calculate new icon based on the unit state
     arrowIcon = class'GotchaUnitFlagHelper'.static.getNewArrowIcon(ObjArrow.icon, unitVState);
+//    `log("new arrowIcon=" @arrowIcon);
 
     // display arrow if icon is new
     if (arrowIcon != "" && arrowIcon != ObjArrow.icon)

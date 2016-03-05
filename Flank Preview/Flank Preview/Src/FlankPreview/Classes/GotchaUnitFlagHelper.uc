@@ -24,8 +24,10 @@ struct UnitArrowIconSet
 var UnitArrowIconSet
         IconSet_Objective_DestroyAlienFacility,
         IconSet_Objective_HackWorkstation,
+        IconSet_Objective_HackUFO,
+        IconSet_Objective_Kill_VIP,
         IconSet_Objective_RecoverItem,
-        IconSet_Objective_Broadcast;
+        IconSet_Objective_HackBroadcast;
 
 defaultproperties
 {
@@ -42,6 +44,15 @@ defaultproperties
         squadsightIcon = "img:///Gotcha.TargetIcons.Objective_DestroyAlienFacility_squadsight",
     )};
 
+    // Kill VIP
+    IconSet_Objective_Kill_VIP = {(
+        defaultIcon = "img:///UILibrary_Common.Objective_VIPGood",
+        spottedIcon = "img:///Gotcha.TargetIcons.Objective_VIPGood_spotted",
+        flankedIcon = "img:///Gotcha.TargetIcons.Objective_VIPGood_flanked",
+        squadsightIcon = "img:///Gotcha.TargetIcons.Objective_VIPGood_squadsight",
+        squadsightFlankedIcon = "img:///Gotcha.TargetIcons.Objective_VIPGood_squadsight_flanked",
+    )};
+
     // Workstation hack
     IconSet_Objective_HackWorkstation = {(
         defaultIcon = "img:///UILibrary_Common.Objective_HackWorkstation",
@@ -55,14 +66,16 @@ defaultproperties
     )};
 
     // Broadcast hack (second last mission)
-    // TODO: set new icon
-    IconSet_Objective_Broadcast = {(
+    IconSet_Objective_HackBroadcast = {(
         defaultIcon = "img:///UILibrary_Common.Objective_Broadcast",
-        hackingIcon = "img:///UILibrary_Common.Objective_Broadcast",
+        hackingIcon = "img:///Gotcha.TargetIcons.Objective_Broadcast_hack",
     )};
 
     // UFO hack
-    //			"img:///UILibrary_Common.Objective_UFO":
+    IconSet_Objective_HackUFO = {(
+        defaultIcon = "img:///UILibrary_Common.Objective_UFO",
+        hackingIcon = "img:///Gotcha.TargetIcons.Objective_UFO_hack",
+    )};
 
 }
 
@@ -70,8 +83,6 @@ defaultproperties
 static function string getNewArrowIcon(string currentIcon, EUnitVisibilityState unitVState)
 {
     local UnitArrowIconSet arrowIconSet;
-
-//    `log("getNewArrowIcon :: currentIcon = " @ currentIcon @", unitVState=" @unitVState);
 
     arrowIconSet = getUnitArrowIconSet(currentIcon);
     if (arrowIconSet.defaultIcon == "") // if icon set not found
@@ -96,14 +107,16 @@ static function UnitArrowIconSet getUnitArrowIconSet(string currentIcon)
     local UnitArrowIconSet arrowIconSet, arrowIconSetNone;
     local array<UnitArrowIconSet> arrowIconSetArr;
 
-    arrowIconSetArr.addItem(default.IconSet_Objective_DestroyAlienFacility); // TODO: make it static
-    arrowIconSetArr.addItem(default.IconSet_Objective_HackWorkstation); // TODO: make it static
-    arrowIconSetArr.addItem(default.IconSet_Objective_RecoverItem); // TODO: make it static
-    arrowIconSetArr.addItem(default.IconSet_Objective_Broadcast); // TODO: make it static
+    // TODO: array should be static
+    arrowIconSetArr.addItem(default.IconSet_Objective_DestroyAlienFacility);
+    arrowIconSetArr.addItem(default.IconSet_Objective_HackWorkstation);
+    arrowIconSetArr.addItem(default.IconSet_Objective_HackUFO);
+//    arrowIconSetArr.addItem(default.IconSet_Objective_Kill_VIP); // TODO: vanilla bug: random icons after loading save game
+    arrowIconSetArr.addItem(default.IconSet_Objective_RecoverItem);
+    arrowIconSetArr.addItem(default.IconSet_Objective_HackBroadcast);
 
     foreach arrowIconSetArr(arrowIconSet)
     {
-//        `log("arrowIconSet.defaultIcon = " @ arrowIconSet.defaultIcon);
         if (currentIcon == arrowIconSet.defaultIcon
             || currentIcon == arrowIconSet.spottedIcon
             || currentIcon == arrowIconSet.flankedIcon
