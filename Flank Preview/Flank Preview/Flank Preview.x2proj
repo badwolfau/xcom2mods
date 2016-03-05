@@ -37,10 +37,10 @@
     <Content Include="Src\FlankPreview\Classes\FlankPreviewFlagManager.uc">
       <SubType>Content</SubType>
     </Content>
-    <Content Include="Src\FlankPreview\Classes\FlankPreviewVisibilityHelper.uc">
+    <Content Include="Src\FlankPreview\Classes\GotchaVisibilityHelper.uc">
       <SubType>Content</SubType>
     </Content>
-    <Content Include="Src\FlankPreview\Classes\HackableObjectIcon.uc">
+    <Content Include="Src\FlankPreview\Classes\GotchaUnitFlagHelper.uc">
       <SubType>Content</SubType>
     </Content>
   </ItemGroup>

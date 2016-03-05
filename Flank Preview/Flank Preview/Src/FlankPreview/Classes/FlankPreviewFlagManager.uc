@@ -1,7 +1,12 @@
-class FlankPreviewFlagManager extends UIUnitFlagManager;
+class FlankPreviewFlagManager extends UIUnitFlagManager
+    dependson(GotchaUnitFlagHelper);
+
+const VISION_DISTANCE = 100000; //What are these units??
+const HACKING_DISTANCE = 107500;
 
 var array<UIUnitFlag>	flankedUnitsArr;
-var const int			hackingDistance;
+var UISpecialMissionHUD_Arrows ArrowManager;
+var GotchaUnitFlagHelper unitFlagHelper;
 
 
 function RealizePreviewEndOfMoveLOS(GameplayTileData MoveToTileData)
@@ -13,224 +18,167 @@ function RealizePreviewEndOfMoveLOS(GameplayTileData MoveToTileData)
 	local XComGameState_BaseObject				flagObj;
 	local XComGameState_Destructible			destructibleObject;
 	local XComGameState_InteractiveObject		interactiveObject;
-	local UISpecialMissionHUD_Arrows			ArrowManager;
-	local UISpecialMissionHUD					SpecialHUDRef;
+
 	local T3DArrow								ObjArrow;
 //	local StateObjectReference					EmptyRef;
-	local TTile									ArrowTile;
-	
-	SpecialHUDRef = `PRES.GetSpecialMissionHUD();
-	ArrowManager = UISpecialMissionHUD_Arrows(SpecialHUDRef.GetChildByName('arrowContainer'));
+    local EUnitVisibilityState unitVState;
+    local vector testLocation;
+
+
+	ArrowManager = UISpecialMissionHUD_Arrows(`PRES.GetSpecialMissionHUD().GetChildByName('arrowContainer'));
     SourceUnitState = XComGameState_Unit(`XCOMHISTORY.GetGameStateForObjectID(m_lastActiveUnit.ObjectID,,-1));
 
-	//////////////////// ARROW HANDLING ////////////////////
-	foreach ArrowManager.arr3Darrows(ObjArrow)
-	{
-		ArrowTile = `XWORLD.GetTileCoordinatesFromPosition(ObjArrow.Loc);
-
-		switch(ObjArrow.Icon)
-		{
-			//Workstation hack
-//			case "img:///Gotcha.UI.WorkStation_Sighted":
-//			case "img:///UILibrary_Common.Objective_HackWorkstation":
-//				if(SourceUnitState.FindAbility('IntrusionProtocol') != EmptyRef)
-//				{
-//					if(`XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, ArrowTile, VisibilityInfo) && VisibilityInfo.bClearLOS && VisibilityInfo.DefaultTargetDist <= (SourceUnitState.GetVisibilityRadius() * hackingDistance))
-//					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///Gotcha.UI.WorkStation_Sighted");
-//				else
-//					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///UILibrary_Common.Objective_HackWorkstation");
-//				}
-//				break;
-//			//Broadcast hack (second last mission)
-//			case "img:///UILibrary_Common.Objective_Broadcast":
-//			case "img:///Gotcha.UI.Objective_Broadcast_Sighted":
-//				if(SourceUnitState.FindAbility('IntrusionProtocol') != EmptyRef)
-//				{
-//					if(`XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, ArrowTile, VisibilityInfo) && VisibilityInfo.bClearLOS && VisibilityInfo.DefaultTargetDist <= (SourceUnitState.GetVisibilityRadius() * hackingDistance))
-//					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///Gotcha.UI.Objective_Broadcast_Sighted");
-//				else
-//					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///UILibrary_Common.Objective_Broadcast");
-//				}
-//				break;
-//			//UFO hack
-//			case "img:///UILibrary_Common.Objective_UFO":
-//			case "img:///Gotcha.UI.Objective_UFO_Sighted":
-//				if(SourceUnitState.FindAbility('IntrusionProtocol') != EmptyRef)
-//				{
-//					if(`XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, ArrowTile, VisibilityInfo) && VisibilityInfo.bClearLOS && VisibilityInfo.DefaultTargetDist <= (SourceUnitState.GetVisibilityRadius() * hackingDistance))
-//					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///Gotcha.UI.Objective_UFO_Sighted");
-//				else
-//					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///UILibrary_Common.Objective_UFO");
-//				}
-//				break;
-
-			//Destroy alien transmitter
-			case "img:///Gotcha.Objective_DestroyAlienFacility_spotted":
-			case "img:///Gotcha.UI.DestructObj_SquadSight":
-			case "img:///UILibrary_Common.Objective_DestroyAlienFacility":
-				if (`XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, ArrowTile, VisibilityInfo) && VisibilityInfo.bClearLOS)
-				{
-					if (VisibilityInfo.DefaultTargetDist <= (SourceUnitState.GetVisibilityRadius() * 100000))
-					{
-						ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///Gotcha.Objective_DestroyAlienFacility_spotted");
-					}
-					else 
-					{
-						if (SourceUnitState.HasSquadSight()) {
-							ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///Gotcha.Objective_DestroyAlienFacility_spotted");
-                        }
-					}
-				}
-				else
-				{
-					ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, "img:///UILibrary_Common.Objective_DestroyAlienFacility");
-                }
-				break;
-			default:
-				break;
-		}
-	}
-
-
-	//////////////////// UNIT FLAG HANDLING ////////////////////
+    `log("------------------");
+    `log("UNIT = " @ m_lastActiveUnit);
 
     // reset flankedArr to prevent a memory leak
 	if (m_arrFlags.length == 0) {
 	    flankedUnitsArr.length = 0;
 	}
 
-//    `log("------------------");
-//    `log("UNIT = " @ m_lastActiveUnit);
-
-
 	foreach m_arrFlags(kFlag)
 	{
 	    if (kFlag.m_bIsFriendly) continue;
 
+
 	    flagObj = `XCOMHISTORY.GetGameStateForObjectID(kFlag.StoredObjectID,,-1);
-//	    `log("kFlag = " @ flagObj);
+	    ObjArrow = getArrowObject(kFlag);
+
+	    `log("kFlag = " @ flagObj @", arrow=" @ObjArrow.Icon);
 
 	    TargetUnitState = XComGameState_Unit(flagObj);
-	    destructibleObject = XComGameState_Destructible(flagObj);		//TODO: Remove this section when objective LOS is fully ported to the Arrow mechanics above
+	    destructibleObject = XComGameState_Destructible(flagObj);
 	    interactiveObject = XComGameState_InteractiveObject(flagObj);
 
 
-        // Interactive Objects (e.g. door)
+        // Interactive Objects
         if (interactiveObject != none) {
             // can see via SquadSight
             if (`XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, interactiveObject.TileLocation, VisibilityInfo) && VisibilityInfo.bClearLOS)
             {
-                if (SourceUnitState.HasSquadSight())
+                if (VisibilityInfo.DefaultTargetDist <= (SourceUnitState.GetVisibilityRadius() * VISION_DISTANCE))
                 {
-                    // display red icon
-                    if(VisibilityInfo.DefaultTargetDist <= (SourceUnitState.GetVisibilityRadius() * 100000))
-					{
-						kFlag.SetAlertState(eUnitFlagAlert_None);
-						SetSpottedAndFlankedState(kFlag, true, false);
-					}
-					else
-					{
-						SetSpottedAndFlankedState(kFlag, false, false);
-						kFlag.SetAlertState(eUnitFlagAlert_Red);
-					}
+                    unitVState = eUVS_Spotted;
                 }
                 else
                 {
-					kFlag.SetAlertState(eUnitFlagAlert_None);
-                    SetSpottedAndFlankedState(kFlag, VisibilityInfo.DefaultTargetDist <= (SourceUnitState.GetVisibilityRadius() * 100000), false); //What are these units??
+                    unitVState = SourceUnitState.HasSquadSight() ? eUVS_SquadSight : eUVS_NotVisible;
                 }
             }
             else
             {
-                // remove 'spotted' icon
-                SetSpottedAndFlankedState(kFlag, false, false);
-				kFlag.SetAlertState(eUnitFlagAlert_None);
+                unitVState = eUVS_NotVisible;
             }
+
+            SetUnitState(kFlag, unitVState, ObjArrow);
             continue;
         }
 
         // Enemy Units
 	    if (TargetUnitState != none) {
 	        Index = MoveToTileData.VisibleEnemies.Find('SourceID', kFlag.StoredObjectID);
-	        if (Index == INDEX_NONE)
+	        if (Index == INDEX_NONE) // if not visible
             {
                 // can see via SquadSight
                 if (SourceUnitState.HasSquadSight() && `XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, TargetUnitState.TileLocation, VisibilityInfo) && VisibilityInfo.bClearLOS)
                 {
-                    displaySpottedIcon(kFlag, MoveToTileData.EventTile, SourceUnitState, TargetUnitState, VisibilityInfo, true);
+                    displaySpottedIcon(kFlag, MoveToTileData.EventTile, SourceUnitState, TargetUnitState, VisibilityInfo, true, ObjArrow);
                 }
                 else
                 {
-                    // remove 'spotted' icon
-					kFlag.SetAlertState(eUnitFlagAlert_None);
-                    SetSpottedAndFlankedState(kFlag, false, false);
+                    SetUnitState(kFlag, eUVS_NotVisible, ObjArrow);
                 }
             }
             else
             {
                 VisibilityInfo = MoveToTileData.VisibleEnemies[Index];
-				kFlag.SetAlertState(eUnitFlagAlert_None);
-                displaySpottedIcon(kFlag, MoveToTileData.EventTile, SourceUnitState, TargetUnitState, VisibilityInfo);
+                displaySpottedIcon(kFlag, MoveToTileData.EventTile, SourceUnitState, TargetUnitState, VisibilityInfo, false, ObjArrow);
             }
             continue;
 	    }
 
         // Destructible Objects (e.g. barrels)
+        // Missions: Recover Item from train
 	    if (destructibleObject != none) {
+	        `log("destructibleObject.ActorId..Location=" @destructibleObject.ActorId.Location @", destructibleObject.TileLocation = (" @ destructibleObject.TileLocation.X @"," @ destructibleObject.TileLocation.Y @"," @ destructibleObject.TileLocation.Z);
+	        testLocation = `XWORLD.GetPositionFromTileCoordinates(destructibleObject.TileLocation);
+	        `log("testLocation = " @ testLocation);
+//	        if(SourceUnitState.FindAbility('IntrusionProtocol') != EmptyRef)
+//            if(`XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, ArrowTile, VisibilityInfo) && VisibilityInfo.bClearLOS && VisibilityInfo.DefaultTargetDist <= (SourceUnitState.GetVisibilityRadius() * HACKING_DISTANCE))
+
+//            objActor = XComInteractiveLevelActor(objectiveInfo.GetVisualizer());
+//            actorObjectState = objActor.GetInteractiveState();
+//          if(actorObjectState.MustBeHacked() && !actorObjectState.HasBeenHacked())
+
+            // TODO: test call
+	        SetUnitState(kFlag, eUVS_Spotted, ObjArrow);
 	        continue;
         }
 
 	}
 }
 
+private function T3DArrow getArrowObject(UIUnitFlag kFlag)
+{
+    local vector vUnitLoc;
+    local T3DArrow ObjArrow, ObjArrowNone;
+
+    vUnitLoc = class'GotchaUnitFlagHelper'.static.getUnitFlagLocation(kFlag);
+
+    foreach ArrowManager.arr3Darrows(ObjArrow)
+    {
+        `log("(" @ vUnitLoc.X @", " @vUnitLoc.Y @") => (" @ObjArrow.Loc.X @", " @ObjArrow.Loc.Y @"), icon=" @ ObjArrow.Icon);
+        if (vUnitLoc.X == ObjArrow.Loc.X && vUnitLoc.Y == ObjArrow.Loc.Y)
+        {
+            `log("FOUND, icon=" @ ObjArrow.icon);
+            return ObjArrow;
+        }
+    }
+    return ObjArrowNone;
+}
 
 private function displaySpottedIcon(UIUnitFlag kFlag,
                            TTile tile,
                            XComGameState_Unit SourceUnitState,
                            XComGameState_Unit TargetUnitState,
                            GameRulesCache_VisibilityInfo VisibilityInfo,
-						   optional bool Squadsight = false)
+						   bool squadsight,
+						   T3DArrow ObjArrow)
 {
+    local EUnitVisibilityState unitVState;
+    local bool flanked;
+
+    flanked = class'GotchaVisibilityHelper'.static.IsFlankedByLocation(tile, SourceUnitState, TargetUnitState, VisibilityInfo);
+
     // if flanked
-    if (class'FlankPreviewVisibilityHelper'.static.IsFlankedByLocation(tile, SourceUnitState, TargetUnitState, VisibilityInfo))
-    {
-        // display yellow icon
-		if(Squadsight)
-		{
-			SetSpottedAndFlankedState(kFlag, false, false);
-			kFlag.SetAlertState(eUnitFlagAlert_Yellow);
-		}
-		else
-		{
-			kFlag.SetAlertState(eUnitFlagAlert_None); 
-			SetSpottedAndFlankedState(kFlag, true, true);
-		}
-    }
-    else
-    {
-        // display red icon
-		if(Squadsight)
-		{
-			SetSpottedAndFlankedState(kFlag, false, false);
-			kFlag.SetAlertState(eUnitFlagAlert_Red);
-		}
-		else
-		{
-			kFlag.SetAlertState(eUnitFlagAlert_None); 
-			SetSpottedAndFlankedState(kFlag, true, false);
-		}
-    }
+    if (flanked && squadsight) unitVState = eUVS_SquadSightFlanked;
+    if (flanked && !squadsight) unitVState = eUVS_Flanked;
+    if (!flanked && squadsight) unitVState = eUVS_SquadSight;
+    if (!flanked && !squadsight) unitVState = eUVS_Spotted;
+
+    SetUnitState(kFlag, unitVState, ObjArrow);
 }
 
+private function SetUnitState(UIUnitFlag kFlag, EUnitVisibilityState unitVState, T3DArrow ObjArrow)
+{
+    `log("kFlag = " @ kFlag.StoredObjectID @", unitVState=" @unitVState @", icon=" @ObjArrow.icon);
+    SetSpottedAndFlankedState(kFlag, unitVState);
+    updateArrowState(kFlag, unitVState, ObjArrow);
+}
 
-function SetSpottedAndFlankedState(UIUnitFlag kFlag, bool spotted, bool flanked)
+private function SetSpottedAndFlankedState(UIUnitFlag kFlag, EUnitVisibilityState unitVState)
 {
 	local ASValue myValue;
 	local Array<ASValue> myArray;
 	local bool m_bFlanked;
+	local bool spotted, flanked, squadsight;
 
-	m_bFlanked = (flankedUnitsArr.find(kFlag) != INDEX_NONE);
+	spotted = (unitVState == eUVS_Spotted || unitVState == eUVS_Flanked);
+	flanked = (unitVState == eUVS_Flanked || unitVState == eUVS_SquadSightFlanked);
+	squadsight = (unitVState == eUVS_SquadSight || unitVState == eUVS_SquadSightFlanked);
 
+    // render flag only if it is a new state
+    m_bFlanked = (flankedUnitsArr.find(kFlag) != INDEX_NONE);
 	if (spotted == kFlag.m_bSpotted && flanked == m_bFlanked) return;
 
     // save the state
@@ -242,7 +190,7 @@ function SetSpottedAndFlankedState(UIUnitFlag kFlag, bool spotted, bool flanked)
 	    flankedUnitsArr.removeItem(kFlag);
 	}
 
-    // display
+    // Display crosshair
 	myValue.Type = AS_Boolean;
 	myValue.b = spotted;
 	myArray.AddItem( myValue );
@@ -252,9 +200,36 @@ function SetSpottedAndFlankedState(UIUnitFlag kFlag, bool spotted, bool flanked)
     myArray.AddItem( myValue );
 
 	kFlag.Invoke("SetSpottedState", myArray);
+
+	// Display squadsight diamond
+    if (!squadsight) kFlag.SetAlertState(eUnitFlagAlert_None);
+	else if (squadsight && !flanked)    kFlag.SetAlertState(eUnitFlagAlert_Red);
+	else if (squadsight && flanked)    kFlag.SetAlertState(eUnitFlagAlert_Yellow);
 }
 
-defaultproperties
+private function updateArrowState(UIUnitFlag kFlag, EUnitVisibilityState unitVState, T3DArrow ObjArrow)
 {
-	hackingDistance = 107500;
+	local string arrowIcon;
+	local vector vUnitLoc;
+	local Vector2D vScreenLocation;
+
+	// Display Arrow
+	if (ObjArrow.icon != "") {
+
+	    vUnitLoc = class'GotchaUnitFlagHelper'.static.getUnitFlagLocation(kFlag);
+        if (class'UIUtilities'.static.IsOnscreen(vUnitLoc, vScreenLocation))
+        {
+            unitVState = eUVS_NotVisible;
+        }
+
+        // calculate new icon based on the unit state
+        arrowIcon = class'GotchaUnitFlagHelper'.static.getNewArrowIcon(ObjArrow.icon, unitVState);
+
+        // display arrow if icon is new
+        if (arrowIcon != "" && arrowIcon != ObjArrow.icon)
+        {
+            ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, arrowIcon);
+        }
+    }
+
 }

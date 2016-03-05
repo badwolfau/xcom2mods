@@ -1,42 +1,4 @@
-class FlankPreviewVisibilityHelper extends X2TacticalVisibilityHelpers;
-
-
-//Looks from a location to an interactive object
-simulated static function bool CanLocationSeeHackableObj(XComGameState_InteractiveObject HackableObj, GameplayTileData Location)
-{
-	local GameRulesCache_VisibilityInfo VisibilityInfo;
-	
-	`XWORLD.CanSeeTileToTile(Location.EventTile, HackableObj.TileLocation, VisibilityInfo);
-
-	if(VisibilityInfo.bClearLOS)
-		return true;
-	else
-		return false;
-}
-
-
-//Function that looks for LOS from a unit to an object
-simulated static function bool CanLocationSeeObject(int TargetID, GameplayTileData Location)
-{
-	local GameRulesCache_VisibilityInfo VisibilityInfo;
-	local XComGameState_Unit SourceState;
-
-	`XWORLD.CanSeeTileToTile(Location.EventTile, XComGameState_InteractiveObject(`XCOMHISTORY.GetGameStateForObjectID(TargetID,,-1)).TileLocation, VisibilityInfo);
-	if(VisibilityInfo.bClearLOS)
-	{
-		SourceState = XComGameState_Unit(`XCOMHISTORY.GetGameStateForObjectID(Location.SourceObjectID,,-1));
-		
-		if(SourceState.HasSquadSight())
-			return true;
-		else
-		{
-			if(VisibilityInfo.DefaultTargetDist <= (SourceState.GetVisibilityRadius() * 100000)) //What are these units??
-				return true;
-		}
-	}
-	return false;
-}
-
+class GotchaVisibilityHelper extends X2TacticalVisibilityHelpers;
 
 //Function that figures out if the Location can see AND flank the target
 simulated static function bool IsFlankedByLocation(TTile ttSource,
@@ -108,13 +70,3 @@ simulated static function bool IsFlankedByLocation(TTile ttSource,
 		return false;
 }
 
-
-//TODO: Handle both LOS and flanking, include squadsight via below function and distance filter.
-//	static event GetAllVisibleEnemiesForPlayer(int PlayerStateObjectID, 
-//														out array<StateObjectReference> VisibleUnits,
-//														int HistoryIndex = -1,
-//														bool IncludeNonUnits = false)
-
-
-//Function to clamp TTile Z-axis to floor tile for conversion to Vector. Doesn't seem to be needed?
-//ttSource.Z = `XWORLD.GetFloorTileZ(ttSource);
