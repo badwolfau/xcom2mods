@@ -11,48 +11,57 @@ var GotchaUnitFlagHelper unitFlagHelper;
 
 function RealizePreviewEndOfMoveLOS(GameplayTileData MoveToTileData)
 {
-	local int									Index;
-	local UIUnitFlag							kFlag;
-	local GameRulesCache_VisibilityInfo			VisibilityInfo;
-	local XComGameState_Unit					SourceUnitState, TargetUnitState;
-	local XComGameState_BaseObject				flagObj;
-	local XComGameState_Destructible			destructibleObject;
-	local XComGameState_InteractiveObject		interactiveObject;
-
-	local T3DArrow								ObjArrow;
-//	local StateObjectReference					EmptyRef;
-    local EUnitVisibilityState unitVState;
-    local vector testLocation;
-
+	local XComGameState_Unit SourceUnitState;
 
 	ArrowManager = UISpecialMissionHUD_Arrows(`PRES.GetSpecialMissionHUD().GetChildByName('arrowContainer'));
     SourceUnitState = XComGameState_Unit(`XCOMHISTORY.GetGameStateForObjectID(m_lastActiveUnit.ObjectID,,-1));
 
-    `log("------------------");
-    `log("UNIT = " @ m_lastActiveUnit);
+//    `log("------------------");
+//    `log("UNIT = " @ m_lastActiveUnit);
 
     // reset flankedArr to prevent a memory leak
 	if (m_arrFlags.length == 0) {
 	    flankedUnitsArr.length = 0;
 	}
 
-	foreach m_arrFlags(kFlag)
-	{
-	    if (kFlag.m_bIsFriendly) continue;
+    processUnitsWithHealth(MoveToTileData, SourceUnitState);
 
+    // Some objects do not have corresponding UnitFlag as they don't have health, so we need to search for them explicitly.
+	processHackableObjectsWithoutHealth(MoveToTileData.EventTile, SourceUnitState);
+}
 
-	    flagObj = `XCOMHISTORY.GetGameStateForObjectID(kFlag.StoredObjectID,,-1);
-	    ObjArrow = getArrowObject(kFlag);
+private function processUnitsWithHealth(GameplayTileData MoveToTileData, XComGameState_Unit SourceUnitState)
+{
+    local int									Index;
+    local UIUnitFlag							kFlag;
+    local GameRulesCache_VisibilityInfo			VisibilityInfo;
+    local XComGameState_Unit					TargetUnitState;
+    local XComGameState_BaseObject				flagObj;
+    local XComGameState_Destructible			destructibleObject;
+    local XComGameState_InteractiveObject		interactiveObject;
+    local T3DArrow								ObjArrow;
+    local EUnitVisibilityState                  unitVState;
+//    local vector                                testLocation;
 
-	    `log("kFlag = " @ flagObj @", arrow=" @ObjArrow.Icon);
+    foreach m_arrFlags(kFlag)
+    {
+        if (kFlag.m_bIsFriendly) continue;
 
-	    TargetUnitState = XComGameState_Unit(flagObj);
-	    destructibleObject = XComGameState_Destructible(flagObj);
-	    interactiveObject = XComGameState_InteractiveObject(flagObj);
+        flagObj = `XCOMHISTORY.GetGameStateForObjectID(kFlag.StoredObjectID,,-1);
+
+//        `log("kFlag = " @ flagObj);
+
+        TargetUnitState = XComGameState_Unit(flagObj);
+        destructibleObject = XComGameState_Destructible(flagObj);
+        interactiveObject = XComGameState_InteractiveObject(flagObj);
 
 
         // Interactive Objects
-        if (interactiveObject != none) {
+        if (interactiveObject != none)
+        {
+            ObjArrow = getArrowObject(class'GotchaUnitFlagHelper'.static.getUnitFlagLocation(kFlag));
+//            `log("ObjArrow=" @ObjArrow.Icon);
+
             // can see via SquadSight
             if (`XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, interactiveObject.TileLocation, VisibilityInfo) && VisibilityInfo.bClearLOS)
             {
@@ -70,67 +79,102 @@ function RealizePreviewEndOfMoveLOS(GameplayTileData MoveToTileData)
                 unitVState = eUVS_NotVisible;
             }
 
-            SetUnitState(kFlag, unitVState, ObjArrow);
+            SetUnitFlagState(kFlag, unitVState, ObjArrow);
             continue;
         }
 
         // Enemy Units
-	    if (TargetUnitState != none) {
-	        Index = MoveToTileData.VisibleEnemies.Find('SourceID', kFlag.StoredObjectID);
-	        if (Index == INDEX_NONE) // if not visible
+        if (TargetUnitState != none)
+        {
+            Index = MoveToTileData.VisibleEnemies.Find('SourceID', kFlag.StoredObjectID);
+            if (Index == INDEX_NONE) // if not visible
             {
                 // can see via SquadSight
                 if (SourceUnitState.HasSquadSight() && `XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, TargetUnitState.TileLocation, VisibilityInfo) && VisibilityInfo.bClearLOS)
                 {
-                    displaySpottedIcon(kFlag, MoveToTileData.EventTile, SourceUnitState, TargetUnitState, VisibilityInfo, true, ObjArrow);
+                    displaySpottedIcon(kFlag, MoveToTileData.EventTile, SourceUnitState, TargetUnitState, VisibilityInfo, true);
                 }
                 else
                 {
-                    SetUnitState(kFlag, eUVS_NotVisible, ObjArrow);
+                    SetUnitFlagState(kFlag, eUVS_NotVisible);
                 }
             }
             else
             {
                 VisibilityInfo = MoveToTileData.VisibleEnemies[Index];
-                displaySpottedIcon(kFlag, MoveToTileData.EventTile, SourceUnitState, TargetUnitState, VisibilityInfo, false, ObjArrow);
+                displaySpottedIcon(kFlag, MoveToTileData.EventTile, SourceUnitState, TargetUnitState, VisibilityInfo, false);
             }
             continue;
-	    }
-
-        // Destructible Objects (e.g. barrels)
-        // Missions: Recover Item from train
-	    if (destructibleObject != none) {
-	        `log("destructibleObject.ActorId..Location=" @destructibleObject.ActorId.Location @", destructibleObject.TileLocation = (" @ destructibleObject.TileLocation.X @"," @ destructibleObject.TileLocation.Y @"," @ destructibleObject.TileLocation.Z);
-	        testLocation = `XWORLD.GetPositionFromTileCoordinates(destructibleObject.TileLocation);
-	        `log("testLocation = " @ testLocation);
-//	        if(SourceUnitState.FindAbility('IntrusionProtocol') != EmptyRef)
-//            if(`XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, ArrowTile, VisibilityInfo) && VisibilityInfo.bClearLOS && VisibilityInfo.DefaultTargetDist <= (SourceUnitState.GetVisibilityRadius() * HACKING_DISTANCE))
-
-//            objActor = XComInteractiveLevelActor(objectiveInfo.GetVisualizer());
-//            actorObjectState = objActor.GetInteractiveState();
-//          if(actorObjectState.MustBeHacked() && !actorObjectState.HasBeenHacked())
-
-            // TODO: test call
-	        SetUnitState(kFlag, eUVS_Spotted, ObjArrow);
-	        continue;
         }
 
-	}
+        // Destructible Objects (e.g. barrels)
+        if (destructibleObject != none)
+        {
+//	        FindOrCreateVisualizer()
+
+//	        `log("ActorName=" @destructibleObject.ActorId.ActorName @", destructibleObject.ActorId..Location=" @destructibleObject.ActorId.Location @", destructibleObject.TileLocation = (" @ destructibleObject.TileLocation.X @"," @ destructibleObject.TileLocation.Y @"," @ destructibleObject.TileLocation.Z);
+//	        testLocation = `XWORLD.GetPositionFromTileCoordinates(destructibleObject.TileLocation);
+//	        `log("testLocation = " @ testLocation);
+
+            continue;
+        }
+    }
 }
 
-private function T3DArrow getArrowObject(UIUnitFlag kFlag)
+private function processHackableObjectsWithoutHealth(TTile eventTile, XComGameState_Unit SourceUnitState)
 {
-    local vector vUnitLoc;
-    local T3DArrow ObjArrow, ObjArrowNone;
+    local GameRulesCache_VisibilityInfo			VisibilityInfo;
+    local XComGameState_Destructible			destructibleObject;
+    local XComGameState_ObjectiveInfo           objectiveInfo;
+    local XComInteractiveLevelActor             objActor;
+    local XComGameState_InteractiveObject       actorObjectState;
+    local StateObjectReference					EmptyRef;
+    local T3DArrow								ObjArrow;
+    local vector                                testLocation;
 
-    vUnitLoc = class'GotchaUnitFlagHelper'.static.getUnitFlagLocation(kFlag);
+    // Mission: Recover Item from train
+    foreach `XCOMHISTORY.IterateByClassType(class'XComGameState_ObjectiveInfo', objectiveInfo)
+    {
+        destructibleObject = XComGameState_Destructible(`XCOMHISTORY.GetGameStateComponentForObjectID(objectiveInfo.ObjectID, class'XComGameState_Destructible'));
+        if (destructibleObject == none) continue;
+
+        testLocation = `XWORLD.GetPositionFromTileCoordinates(destructibleObject.TileLocation);
+        ObjArrow = getArrowObject(testLocation);
+
+        // display Hack icon obly if unit has IntrusionProtocol skill
+        if (SourceUnitState.FindAbility('IntrusionProtocol') != EmptyRef)
+        {
+            `XWORLD.CanSeeTileToTile(eventTile, destructibleObject.TileLocation, VisibilityInfo);
+
+            if (VisibilityInfo.bClearLOS && VisibilityInfo.DefaultTargetDist <= (SourceUnitState.GetVisibilityRadius() * HACKING_DISTANCE))
+            {
+                objActor = XComInteractiveLevelActor(objectiveInfo.GetVisualizer());
+                actorObjectState = objActor.GetInteractiveState();
+
+                if (actorObjectState.MustBeHacked() && !actorObjectState.HasBeenHacked())
+                {
+//                    `log("HACKING id=" @destructibleObject.ObjectID);
+                    displayArrow(ObjArrow, eUVS_Hacking);
+                    continue;
+                }
+            }
+        }
+
+        // clear arrow by default
+        displayArrow(ObjArrow, eUVS_NotVisible);
+    }
+}
+
+private function T3DArrow getArrowObject(vector vUnitLoc)
+{
+    local T3DArrow ObjArrow, ObjArrowNone;
 
     foreach ArrowManager.arr3Darrows(ObjArrow)
     {
-        `log("(" @ vUnitLoc.X @", " @vUnitLoc.Y @") => (" @ObjArrow.Loc.X @", " @ObjArrow.Loc.Y @"), icon=" @ ObjArrow.Icon);
+//        `log("(" @ vUnitLoc.X @", " @vUnitLoc.Y @") => (" @ObjArrow.Loc.X @", " @ObjArrow.Loc.Y @"), icon=" @ ObjArrow.Icon);
         if (vUnitLoc.X == ObjArrow.Loc.X && vUnitLoc.Y == ObjArrow.Loc.Y)
         {
-            `log("FOUND, icon=" @ ObjArrow.icon);
+//            `log("FOUND, icon =" @ ObjArrow.icon);
             return ObjArrow;
         }
     }
@@ -142,8 +186,7 @@ private function displaySpottedIcon(UIUnitFlag kFlag,
                            XComGameState_Unit SourceUnitState,
                            XComGameState_Unit TargetUnitState,
                            GameRulesCache_VisibilityInfo VisibilityInfo,
-						   bool squadsight,
-						   T3DArrow ObjArrow)
+						   bool squadsight)
 {
     local EUnitVisibilityState unitVState;
     local bool flanked;
@@ -156,14 +199,31 @@ private function displaySpottedIcon(UIUnitFlag kFlag,
     if (!flanked && squadsight) unitVState = eUVS_SquadSight;
     if (!flanked && !squadsight) unitVState = eUVS_Spotted;
 
-    SetUnitState(kFlag, unitVState, ObjArrow);
+    SetUnitFlagState(kFlag, unitVState);
 }
 
-private function SetUnitState(UIUnitFlag kFlag, EUnitVisibilityState unitVState, T3DArrow ObjArrow)
+private function SetUnitFlagState(UIUnitFlag kFlag,
+                                  EUnitVisibilityState unitVState,
+                                  optional T3DArrow ObjArrow)
 {
-    `log("kFlag = " @ kFlag.StoredObjectID @", unitVState=" @unitVState @", icon=" @ObjArrow.icon);
+    local vector vUnitLoc;
+    local Vector2D vScreenLocation;
+    
+//    `log("SetUnitFlagState ::: kFlag = " @ kFlag.StoredObjectID @", unitVState=" @unitVState);
+
     SetSpottedAndFlankedState(kFlag, unitVState);
-    updateArrowState(kFlag, unitVState, ObjArrow);
+
+    // display Arrows only if specified.
+    if (ObjArrow.icon != "")
+    {
+        // hide 
+        vUnitLoc = class'GotchaUnitFlagHelper'.static.getUnitFlagLocation(kFlag);
+        if (class'UIUtilities'.static.IsOnscreen(vUnitLoc, vScreenLocation))
+        {
+            unitVState = eUVS_NotVisible;
+        }
+        displayArrow(ObjArrow, unitVState);
+    }
 }
 
 private function SetSpottedAndFlankedState(UIUnitFlag kFlag, EUnitVisibilityState unitVState)
@@ -207,29 +267,26 @@ private function SetSpottedAndFlankedState(UIUnitFlag kFlag, EUnitVisibilityStat
 	else if (squadsight && flanked)    kFlag.SetAlertState(eUnitFlagAlert_Yellow);
 }
 
-private function updateArrowState(UIUnitFlag kFlag, EUnitVisibilityState unitVState, T3DArrow ObjArrow)
+private function displayArrow(T3DArrow ObjArrow, EUnitVisibilityState unitVState)
 {
 	local string arrowIcon;
-	local vector vUnitLoc;
-	local Vector2D vScreenLocation;
 
-	// Display Arrow
-	if (ObjArrow.icon != "") {
+//	`log("displayArrow ::: icon=" @ObjArrow.icon @", loc=" @ObjArrow.Loc @", unitVState=" @unitVState);
 
-	    vUnitLoc = class'GotchaUnitFlagHelper'.static.getUnitFlagLocation(kFlag);
-        if (class'UIUtilities'.static.IsOnscreen(vUnitLoc, vScreenLocation))
-        {
-            unitVState = eUVS_NotVisible;
-        }
+    // ignore invalid arrows. It should never happen but...
+    if (ObjArrow.icon == "")
+    {
+//	    `log("INVALID arrow");
+        return;
+    }
+	
+    // calculate new icon based on the unit state
+    arrowIcon = class'GotchaUnitFlagHelper'.static.getNewArrowIcon(ObjArrow.icon, unitVState);
 
-        // calculate new icon based on the unit state
-        arrowIcon = class'GotchaUnitFlagHelper'.static.getNewArrowIcon(ObjArrow.icon, unitVState);
-
-        // display arrow if icon is new
-        if (arrowIcon != "" && arrowIcon != ObjArrow.icon)
-        {
-            ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, arrowIcon);
-        }
+    // display arrow if icon is new
+    if (arrowIcon != "" && arrowIcon != ObjArrow.icon)
+    {
+        ArrowManager.AddArrowPointingAtLocation(ObjArrow.loc, ObjArrow.Offset, ObjArrow.arrowState, ObjArrow.arrowCounter, arrowIcon);
     }
 
 }

@@ -24,6 +24,7 @@ struct UnitArrowIconSet
 var UnitArrowIconSet
         IconSet_Objective_DestroyAlienFacility,
         IconSet_Objective_HackWorkstation,
+        IconSet_Objective_RecoverItem,
         IconSet_Objective_Broadcast;
 
 defaultproperties
@@ -34,29 +35,34 @@ defaultproperties
     //        UnitArrowIconSet("img:///UILibrary_Common.Objective_DestroyAlienFacility", "img:///Gotcha.TargetIcons.Objective_DestroyAlienFacility_spotted")
     //    );
 
-    //Destroy alien transmitter
+    // Destroy alien transmitter
     IconSet_Objective_DestroyAlienFacility = {(
         defaultIcon = "img:///UILibrary_Common.Objective_DestroyAlienFacility",
         spottedIcon = "img:///Gotcha.TargetIcons.Objective_DestroyAlienFacility_spotted",
         squadsightIcon = "img:///Gotcha.TargetIcons.Objective_DestroyAlienFacility_squadsight",
     )};
 
-    //Workstation hack
-    // TODO: set new icon
+    // Workstation hack
     IconSet_Objective_HackWorkstation = {(
         defaultIcon = "img:///UILibrary_Common.Objective_HackWorkstation",
-        hackingIcon = "img:///UILibrary_Common.Objective_HackWorkstation",
+        hackingIcon = "img:///Gotcha.TargetIcons.Objective_HackWorkstation_hack",
     )};
 
-    //Broadcast hack (second last mission)
+    // Mission: Recover Item from train
+    IconSet_Objective_RecoverItem = {(
+        defaultIcon = "img:///UILibrary_Common.Objective_RecoverItem",
+        hackingIcon = "img:///Gotcha.TargetIcons.Objective_RecoverItem_hack",
+    )};
+
+    // Broadcast hack (second last mission)
     // TODO: set new icon
     IconSet_Objective_Broadcast = {(
         defaultIcon = "img:///UILibrary_Common.Objective_Broadcast",
         hackingIcon = "img:///UILibrary_Common.Objective_Broadcast",
     )};
 
-    //UFO hack
-    //			case "img:///UILibrary_Common.Objective_UFO":
+    // UFO hack
+    //			"img:///UILibrary_Common.Objective_UFO":
 
 }
 
@@ -65,7 +71,7 @@ static function string getNewArrowIcon(string currentIcon, EUnitVisibilityState 
 {
     local UnitArrowIconSet arrowIconSet;
 
-    `log("currentIcon = " @ currentIcon @", unitVState=" @unitVState);
+//    `log("getNewArrowIcon :: currentIcon = " @ currentIcon @", unitVState=" @unitVState);
 
     arrowIconSet = getUnitArrowIconSet(currentIcon);
     if (arrowIconSet.defaultIcon == "") // if icon set not found
@@ -92,11 +98,12 @@ static function UnitArrowIconSet getUnitArrowIconSet(string currentIcon)
 
     arrowIconSetArr.addItem(default.IconSet_Objective_DestroyAlienFacility); // TODO: make it static
     arrowIconSetArr.addItem(default.IconSet_Objective_HackWorkstation); // TODO: make it static
+    arrowIconSetArr.addItem(default.IconSet_Objective_RecoverItem); // TODO: make it static
     arrowIconSetArr.addItem(default.IconSet_Objective_Broadcast); // TODO: make it static
 
     foreach arrowIconSetArr(arrowIconSet)
     {
-        `log("arrowIconSet.defaultIcon = " @ arrowIconSet.defaultIcon);
+//        `log("arrowIconSet.defaultIcon = " @ arrowIconSet.defaultIcon);
         if (currentIcon == arrowIconSet.defaultIcon
             || currentIcon == arrowIconSet.spottedIcon
             || currentIcon == arrowIconSet.flankedIcon
