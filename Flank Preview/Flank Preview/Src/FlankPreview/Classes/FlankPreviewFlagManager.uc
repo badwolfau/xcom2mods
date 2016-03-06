@@ -219,23 +219,16 @@ private function SetUnitFlagState(UIUnitFlag kFlag,
                                   EUnitVisibilityState unitVState,
                                   optional T3DArrow ObjArrow)
 {
-    local vector vUnitLoc;
-    local Vector2D vScreenLocation;
-    
 //    `log("SetUnitFlagState ::: kFlag = " @ kFlag.StoredObjectID @", unitVState=" @unitVState);
 
-    SetSpottedAndFlankedState(kFlag, unitVState);
-
-    // display Arrows only if specified.
-    if (ObjArrow.icon != "")
+    if (ObjArrow.icon != "") // objectives
     {
-        // hide 
-        vUnitLoc = class'GotchaUnitFlagHelper'.static.getUnitFlagLocation(kFlag);
-        if (class'UIUtilities'.static.IsOnscreen(vUnitLoc, vScreenLocation))
-        {
-            unitVState = eUVS_NotVisible;
-        }
+        SetSpottedAndFlankedState(kFlag, eUVS_NotVisible);
         displayArrow(ObjArrow, unitVState);
+    }
+    else
+    {
+        SetSpottedAndFlankedState(kFlag, unitVState);
     }
 }
 
