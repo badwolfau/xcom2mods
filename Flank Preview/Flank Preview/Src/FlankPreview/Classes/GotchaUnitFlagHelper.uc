@@ -33,48 +33,47 @@ defaultproperties
 {
     // TODO: use array of icons instead of separate variables
     //    arrowIconSetArr = (
-    //        (defaultIcon="img:///UILibrary_Common.Objective_DestroyAlienFacility", spottedIcon="img:///Gotcha.TargetIcons.Objective_DestroyAlienFacility_spotted")
-    //        UnitArrowIconSet("img:///UILibrary_Common.Objective_DestroyAlienFacility", "img:///Gotcha.TargetIcons.Objective_DestroyAlienFacility_spotted")
+    //        (defaultIcon="img:///UILibrary_Common.Objective_DestroyAlienFacility", spottedIcon="img:///Gotcha.Objective_DestroyAlienFacility_spotted")
     //    );
 
     // Destroy alien transmitter
     IconSet_Objective_DestroyAlienFacility = {(
         defaultIcon = "img:///UILibrary_Common.Objective_DestroyAlienFacility",
-        spottedIcon = "img:///Gotcha.TargetIcons.Objective_DestroyAlienFacility_spotted",
-        squadsightIcon = "img:///Gotcha.TargetIcons.Objective_DestroyAlienFacility_squadsight",
+        spottedIcon = "img:///Gotcha.Objective_DestroyAlienFacility_spotted",
+        squadsightIcon = "img:///Gotcha.Objective_DestroyAlienFacility_squadsight",
     )};
 
     // Kill VIP
     IconSet_Objective_Kill_VIP = {(
-        defaultIcon = "img:///UILibrary_Common.Objective_VIPGood",
-        spottedIcon = "img:///Gotcha.TargetIcons.Objective_VIPGood_spotted",
-        flankedIcon = "img:///Gotcha.TargetIcons.Objective_VIPGood_flanked",
-        squadsightIcon = "img:///Gotcha.TargetIcons.Objective_VIPGood_squadsight",
-        squadsightFlankedIcon = "img:///Gotcha.TargetIcons.Objective_VIPGood_squadsight_flanked",
+        defaultIcon = "img:///UILibrary_Common.Objective_VIPBad",
+        spottedIcon = "img:///Gotcha.Objective_VIPBad_spotted",
+        flankedIcon = "img:///Gotcha.Objective_VIPBad_flanked",
+        squadsightIcon = "img:///Gotcha.Objective_VIPBad_squadsight",
+        squadsightFlankedIcon = "img:///Gotcha.Objective_VIPBad_squadsight_flanked",
     )};
 
     // Workstation hack
     IconSet_Objective_HackWorkstation = {(
         defaultIcon = "img:///UILibrary_Common.Objective_HackWorkstation",
-        hackingIcon = "img:///Gotcha.TargetIcons.Objective_HackWorkstation_hack",
+        hackingIcon = "img:///Gotcha.Objective_HackWorkstation_hack",
     )};
 
     // Mission: Recover Item from train
     IconSet_Objective_RecoverItem = {(
         defaultIcon = "img:///UILibrary_Common.Objective_RecoverItem",
-        hackingIcon = "img:///Gotcha.TargetIcons.Objective_RecoverItem_hack",
+        hackingIcon = "img:///Gotcha.Objective_RecoverItem_hack",
     )};
 
     // Broadcast hack (second last mission)
     IconSet_Objective_HackBroadcast = {(
         defaultIcon = "img:///UILibrary_Common.Objective_Broadcast",
-        hackingIcon = "img:///Gotcha.TargetIcons.Objective_Broadcast_hack",
+        hackingIcon = "img:///Gotcha.Objective_Broadcast_hack",
     )};
 
     // UFO hack
     IconSet_Objective_HackUFO = {(
         defaultIcon = "img:///UILibrary_Common.Objective_UFO",
-        hackingIcon = "img:///Gotcha.TargetIcons.Objective_UFO_hack",
+        hackingIcon = "img:///Gotcha.Objective_UFO_hack",
     )};
 
 }
@@ -111,7 +110,7 @@ static function UnitArrowIconSet getUnitArrowIconSet(string currentIcon)
     arrowIconSetArr.addItem(default.IconSet_Objective_DestroyAlienFacility);
     arrowIconSetArr.addItem(default.IconSet_Objective_HackWorkstation);
     arrowIconSetArr.addItem(default.IconSet_Objective_HackUFO);
-//    arrowIconSetArr.addItem(default.IconSet_Objective_Kill_VIP); // TODO: vanilla bug: random icons after loading save game
+    arrowIconSetArr.addItem(default.IconSet_Objective_Kill_VIP);
     arrowIconSetArr.addItem(default.IconSet_Objective_RecoverItem);
     arrowIconSetArr.addItem(default.IconSet_Objective_HackBroadcast);
 
