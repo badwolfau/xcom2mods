@@ -1,4 +1,5 @@
-class FlankPreviewFlagManager extends UIUnitFlagManager dependson(GotchaUnitFlagHelper);
+class FlankPreviewFlagManager extends UIUnitFlagManager
+	 dependson(GotchaUnitFlagHelper);
 
 const VISION_DISTANCE = 100000; //What are these units??
 const HACKING_DISTANCE = 107500;
@@ -146,12 +147,20 @@ private function processUnitsWithHealth(GameplayTileData MoveToTileData, XComGam
              }
 
             Index = MoveToTileData.VisibleEnemies.Find('SourceID', kFlag.StoredObjectID);
-            if (Index == INDEX_NONE) // if not visible
+            if (Index == INDEX_NONE) // if not in VisibleEnemies
             {
-                // can see via SquadSight
-                if (SourceUnitState.HasSquadSight() && `XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, TargetUnitState.TileLocation, VisibilityInfo) && VisibilityInfo.bClearLOS)
+                // Check for visible by unconventional means (squadsight, battle scanner, etc)
+                if (`XWORLD.CanSeeTileToTile(MoveToTileData.EventTile, TargetUnitState.TileLocation, VisibilityInfo) && VisibilityInfo.bClearLOS)
                 {
-                    displaySpottedIcon(kFlag, MoveToTileData.EventTile, SourceUnitState, TargetUnitState, VisibilityInfo, true, ObjArrow);
+					if(VisibilityInfo.DefaultTargetDist >= (SourceUnitState.GetVisibilityRadius() * VISION_DISTANCE))
+					{
+						if(SourceUnitState.HasSquadSight())
+							displaySpottedIcon(kFlag, MoveToTileData.EventTile, SourceUnitState, TargetUnitState, VisibilityInfo, true, ObjArrow);
+						else
+							SetUnitFlagState(kFlag, eUVS_NotVisible, ObjArrow);
+					}
+					else
+						displaySpottedIcon(kFlag, MoveToTileData.EventTile, SourceUnitState, TargetUnitState, VisibilityInfo, false, ObjArrow);
                 }
                 else
                 {
@@ -394,3 +403,32 @@ private function displayArrow(T3DArrow ObjArrow, EUnitVisibilityState unitVState
     }
 
 }
+
+//@Override
+simulated function ActivateExtensionForTargetedUnit(StateObjectReference ObjectRef)
+{
+	local UIUnitFlag kFlag;
+
+	if( ObjectRef.ObjectID > 0 )
+	{
+		foreach m_arrFlags(kFlag)
+		{
+			if(kFlag.StoredObjectID == ObjectRef.ObjectID)
+				SetSpottedAndFlankedState(kFlag, eUVS_NotVisible);	// Hide visibility flag for unit when taking a shot
+			kFlag.ActivateExtensionForTargeting(kFlag.StoredObjectID == ObjectRef.ObjectID);
+		}
+	}
+}
+
+/*
+function HandleGrapplePreview(TTile DestTile)
+{
+	local array<GameplayTileData> TileData;
+	local array<TTile> arrDestination;
+
+	arrDestination[0] = DestTile;
+	class'X2TacticalVisibilityHelpers'.static.FillPathTileData(m_lastActiveUnit.ObjectID, arrDestination, TileData);
+
+	RealizePreviewEndOfMoveLOS(TileData[0]);
+}
+*/

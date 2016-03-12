@@ -1,12 +1,14 @@
 class GotchaVisibilityHelper extends X2TacticalVisibilityHelpers;
 
+const VISION_DISTANCE = 100000; //What are these units??
+
 //Function that figures out if the Location can see AND flank the target
 simulated static function bool IsFlankedByLocation(TTile ttSource,
                                                    XComGameState_Unit SourceUnitState,
                                                    XComGameState_Unit TargetUnitState,
                                                    GameRulesCache_VisibilityInfo VisibilityInfo)
 {
-	local TTile ttTarget, ttDiff;
+	local TTile ttTarget, ttDiff, ttPeekSource;
 	local vector vSource, vTarget;
 	local float fCoverAngle;
 	local ECoverType TargetCover;
@@ -25,13 +27,14 @@ simulated static function bool IsFlankedByLocation(TTile ttSource,
 		vSource = `XWORLD.GetPositionFromTileCoordinates(ttSource);
 		vTarget = `XWORLD.GetPositionFromTileCoordinates(ttTarget);
 		fCoverAngle = VisibilityInfo.TargetCoverAngle;
-		TargetCover = `XWORLD.GetCoverTypeForTarget(vSource, vTarget, fCoverAngle,);
+		TargetCover = `XWORLD.GetCoverTypeForTarget(vSource, vTarget, fCoverAngle);
 		
 		if(TargetCover == CT_None)
 			return true;
 
 		//Time to check for peeking...
-		if(VisibilityInfo.TargetCover == CT_None)			//If the target is flanking our position, we cannot peek flank them...
+		// TODO: Investigate removing this clause, it may cause issues with non-standard units.
+		if(VisibilityInfo.TargetCover == CT_None && VisibilityInfo.DefaultTargetDist <= (TargetUnitState.GetVisibilityRadius() * VISION_DISTANCE))	//Hack: If the target is flanking our position and we don't directly flank them, we probably cannot peek flank them...
 			{
 				ttDiff.X = abs(ttSource.X - ttTarget.X);						//...unless we're both standing at a corner!
 				ttDiff.Y = abs(ttSource.Y - ttTarget.Y);
@@ -50,19 +53,28 @@ simulated static function bool IsFlankedByLocation(TTile ttSource,
 				//Check left side
 				if(PeekData.CoverDirectionInfo[i].LeftPeek.bHasPeekAround == 1)
 				{
-					ttSource = PeekData.CoverDirectionInfo[i].LeftPeek.PeekTile;
-					`XWORLD.CanSeeTileToTile(ttSource, ttTarget, PeekVisInfo);
-					if(PeekVisInfo.CoverDirection == -1)
-						return true;
-
+					ttPeekSource = PeekData.CoverDirectionInfo[i].LeftPeek.PeekTile;
+					`XWORLD.CanSeeTileToTile(ttPeekSource, ttTarget, PeekVisInfo);
+					if(PeekVisInfo.bClearLOS)
+					{
+						vSource = `XWORLD.GetPositionFromTileCoordinates(PeekData.CoverDirectionInfo[i].LeftPeek.PeekTile);
+						TargetCover = `XWORLD.GetCoverTypeForTarget(vSource, vTarget, fCoverAngle);
+						if(TargetCover == CT_None)
+							return true;
+					}
 				}
 				//Check right side
 				if(PeekData.CoverDirectionInfo[i].RightPeek.bHasPeekAround == 1)
 				{
-					ttSource = PeekData.CoverDirectionInfo[i].RightPeek.PeekTile;
-					`XWORLD.CanSeeTileToTile(ttSource, ttTarget, PeekVisInfo);
-					if(PeekVisInfo.CoverDirection == -1)
-						return true;
+					ttPeekSource = PeekData.CoverDirectionInfo[i].RightPeek.PeekTile;
+					`XWORLD.CanSeeTileToTile(ttPeekSource, ttTarget, PeekVisInfo);
+					if(PeekVisInfo.bClearLOS)
+					{
+						vSource = `XWORLD.GetPositionFromTileCoordinates(PeekData.CoverDirectionInfo[i].RightPeek.PeekTile);
+						TargetCover = `XWORLD.GetCoverTypeForTarget(vSource, vTarget, fCoverAngle);
+						if(TargetCover == CT_None)
+							return true;
+					}
 				}
 			}
 		}
